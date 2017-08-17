@@ -7,6 +7,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.DriverManager;
 import java.sql.ResultSetMetaData;
+import java.util.Vector;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONException;
@@ -16,7 +18,16 @@ import org.json.JSONException;
  */
 public class MainServlet extends javax.servlet.http.HttpServlet {
     protected void doPost(javax.servlet.http.HttpServletRequest request, javax.servlet.http.HttpServletResponse response) throws javax.servlet.ServletException, IOException {
+        String pass = "qwerty123";
+        try {
+            DatabaseHandler databaseHandler = new DatabaseHandler();
+            Connection con = databaseHandler.connecttodatabase(pass);
 
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     protected void doGet(javax.servlet.http.HttpServletRequest request, javax.servlet.http.HttpServletResponse response) throws javax.servlet.ServletException, IOException {
@@ -27,31 +38,18 @@ public class MainServlet extends javax.servlet.http.HttpServlet {
         try{
             Class.forName("com.mysql.jdbc.Driver");
             Connection con= DriverManager.getConnection(
-                    "jdbc:mysql://localhost:3306/news","root","!rnthakur123");
-            PreparedStatement ps=con.prepareStatement("select title from business");
-            ResultSet rs=ps.executeQuery();
+                    "jdbc:mysql://localhost:3306/news","root","qwerty123");
+            String tablename = "business_cluster_score";
+            String str1 = "5";
 
-            ResultSetMetaData rsmd=rs.getMetaData();
+            Vector<String> topcluster= new DatabaseHandler().topcluster(con, 10, "sports_cluster_score");
 
-            JSONArray json = new JSONArray();
+            JSONArray json = new DatabaseHandler().toparticle(con,topcluster);
 
-            while (rs.next()) {
-                int total=rsmd.getColumnCount();
-                JSONObject jon = new JSONObject();
-
-                for(int i=0;i<total;i++) {
-                    String col_name = rsmd.getColumnName(i+1);
-
-                    jon.put(col_name,rs.getString(i+1));
-                }
-                json.put(jon);
-            }
-          //  System.out.println(json);
-            //response.setContentType("application/json");
-           // response.getWriter().write(json.toString());
             PrintWriter pw = response.getWriter();
             pw.print(json.toString());
             pw.close();
+
 
         }catch (Exception e2) {e2.printStackTrace();}
 
